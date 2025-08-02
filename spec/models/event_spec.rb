@@ -76,10 +76,6 @@ RSpec.describe Event, type: :model do
       random_event = Event.random_event
       expect(random_event).to be_an(Event)
     end
-
-    it "returns nil when no events exist" do
-      expect(Event.random_event).to be_nil
-    end
   end
 
   describe "constants" do

@@ -2,7 +2,26 @@ class GamesController < ApplicationController
   allow_unauthenticated_access # Allow anonymous users to play
 
   def index
-    @current_game = current_user.current_game || create_new_game_for_user
+    # Ensure we only have one incomplete game per user (for authenticated users)
+    if authenticated?
+      incomplete_games = current_user.games.where(completed_at: nil)
+
+      if incomplete_games.count > 1
+        # If somehow there are multiple incomplete games, complete the old ones
+        incomplete_games.order(created_at: :asc).limit(incomplete_games.count - 1).update_all(completed_at: Time.current, won: false)
+      end
+    end
+
+    @current_game = current_user.current_game
+
+    # Only create a new game if there's no current game AND no completed game to show
+    if @current_game.nil?
+      @current_game = create_new_game_for_user
+    elsif @current_game.completed? && params[:new_game]
+      # If user explicitly requests a new game, clear the completed one and create new
+      @current_game = create_new_game_for_user
+    end
+
     @previous_games = authenticated? ? current_user.games.completed.recent.limit(10) : []
   end
 
@@ -47,6 +66,11 @@ class GamesController < ApplicationController
   private
 
   def create_new_game_for_user
+    # For anonymous users, clear any existing completed game first
+    if !authenticated? && current_user.current_game&.completed?
+      Rails.cache.delete("anonymous_game_#{current_user.session_id}")
+    end
+
     if authenticated?
       Game.create_new_game(current_user)
     else

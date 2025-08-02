@@ -44,7 +44,8 @@ class AnonymousUserGames
     # Store current game in session
     if Rails.cache.exist?("anonymous_game_#{@session_id}")
       game_data = Rails.cache.read("anonymous_game_#{@session_id}")
-      return nil if game_data[:completed_at].present?
+      # For anonymous users, return completed games so they can see the result
+      # The controller/view will handle creating a new game when needed
 
       # Reconstruct the game object
       begin

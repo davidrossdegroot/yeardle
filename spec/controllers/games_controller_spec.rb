@@ -76,7 +76,7 @@ RSpec.describe GamesController, type: :controller do
         end
 
         it "marks game as lost and completed" do
-          post :guess, params: { id: game.id, year: event.year + 10 }
+          post :guess, params: { id: game.id, year: event.year + 1 }
 
           game.reload
           expect(game.completed?).to be true

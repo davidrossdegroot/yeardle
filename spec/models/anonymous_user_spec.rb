@@ -74,7 +74,7 @@ RSpec.describe AnonymousUserGames, type: :model do
       expect(games.current_game).to be_nil
     end
 
-    it "returns nil when cached game is completed" do
+    it "returns AnonymousGame when cached game is completed" do
       # Create event explicitly before storing its ID
       event = create(:event)
 
@@ -87,7 +87,11 @@ RSpec.describe AnonymousUserGames, type: :model do
       }
       Rails.cache.write("anonymous_game_#{session_id}", completed_game_data)
 
-      expect(games.current_game).to be_nil
+      current_game = games.current_game
+      expect(current_game).to be_an(AnonymousGame)
+      expect(current_game.id).to eq("game123")
+      expect(current_game.event).to eq(event)
+      expect(current_game.completed?).to be true
     end
 
     it "returns AnonymousGame when incomplete game exists" do

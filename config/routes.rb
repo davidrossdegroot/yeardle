@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  resource :session
+  resource :session, except: [ :show ]
   resources :passwords, param: :token
-  resources :users, only: [:new, :create]
+  resources :users, only: [ :new, :create ]
 
   resources :games, only: [ :index, :show ] do
     member do

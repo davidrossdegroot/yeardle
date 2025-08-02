@@ -13,7 +13,7 @@ class User < ApplicationRecord
   end
 
   def current_game
-    games.current_game
+    games.includes(:guesses).where(completed_at: nil).order(created_at: :desc).first
   end
 
   def anonymous?
