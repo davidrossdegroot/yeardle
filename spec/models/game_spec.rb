@@ -140,6 +140,8 @@ RSpec.describe Game, type: :model do
     end
 
     it "assigns a random event to the game" do
+      create(:event)
+
       game = Game.create_new_game(user)
       expect(game.event).to_not be_nil
     end
