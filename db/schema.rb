@@ -10,9 +10,34 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_30_223606) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_catalog.plpgsql"
+ActiveRecord::Schema[8.0].define(version: 2025_08_02_173427) do
+  create_table "events", force: :cascade do |t|
+    t.string "name"
+    t.integer "year"
+    t.string "category"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "games", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "event_id", null: false
+    t.datetime "completed_at"
+    t.boolean "won"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_games_on_event_id"
+    t.index ["user_id"], name: "index_games_on_user_id"
+  end
+
+  create_table "guesses", force: :cascade do |t|
+    t.integer "game_id", null: false
+    t.integer "year"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id"], name: "index_guesses_on_game_id"
+  end
 
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -31,5 +56,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_223606) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "games", "events"
+  add_foreign_key "games", "users"
+  add_foreign_key "guesses", "games"
   add_foreign_key "sessions", "users"
 end

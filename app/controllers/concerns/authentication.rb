@@ -3,7 +3,7 @@ module Authentication
 
   included do
     before_action :require_authentication
-    helper_method :authenticated?
+    helper_method :authenticated?, :current_user
   end
 
   class_methods do
@@ -19,6 +19,19 @@ module Authentication
 
     def require_authentication
       resume_session || request_authentication
+    end
+
+    def current_user
+      if Current.session&.user
+        Current.session.user
+      else
+        # Return anonymous user for unauthenticated access
+        anonymous_user
+      end
+    end
+
+    def anonymous_user
+      @anonymous_user ||= AnonymousUser.new(session[:anonymous_session_id] ||= SecureRandom.hex(16))
     end
 
     def resume_session
