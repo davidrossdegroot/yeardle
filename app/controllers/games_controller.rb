@@ -15,7 +15,11 @@ class GamesController < ApplicationController
     year = params[:year].to_i
 
     if @game.completed?
-      redirect_to @game, alert: "This game is already completed."
+      if authenticated?
+        redirect_to @game, alert: "This game is already completed."
+      else
+        redirect_to games_path, alert: "This game is already completed."
+      end
       return
     end
 
@@ -23,10 +27,18 @@ class GamesController < ApplicationController
 
     if guess.correct?
       @game.update!(completed_at: Time.current, won: true)
-      redirect_to games_path, notice: "Congratulations! You guessed correctly!"
+      if authenticated?
+        redirect_to @game, notice: "Congratulations! You guessed correctly!"
+      else
+        redirect_to games_path, notice: "Congratulations! You guessed correctly!"
+      end
     elsif @game.guesses.count >= 6
       @game.update!(completed_at: Time.current, won: false)
-      redirect_to games_path, alert: "Game over! The correct year was #{@game.event.year}."
+      if authenticated?
+        redirect_to @game, alert: "Game over! The correct year was #{@game.event.year}."
+      else
+        redirect_to games_path, alert: "Game over! The correct year was #{@game.event.year}."
+      end
     else
       redirect_to games_path
     end
