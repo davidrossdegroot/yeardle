@@ -63,8 +63,14 @@ RSpec.describe Game, type: :model do
     end
 
     it "orders by recent" do
-      old_game = create(:game, created_at: 1.day.ago)
-      new_game = create(:game, created_at: 1.hour.ago)
+      # Clear any existing games to avoid interference
+      Game.delete_all
+
+      old_game = create(:game)
+      old_game.update_column(:created_at, 1.day.ago)
+
+      new_game = create(:game)
+      new_game.update_column(:created_at, 1.hour.ago)
 
       recent_games = Game.recent
       expect(recent_games.first).to eq(new_game)

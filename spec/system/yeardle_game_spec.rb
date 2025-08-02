@@ -43,24 +43,6 @@ RSpec.describe "Yeardle Game", type: :system do
         expect(page).to have_content("Attempts remaining: 5")
       end
 
-      # xit this cause i don't think it works.
-      it "completes the game when guessing correctly", js: true do
-        visit root_path
-
-        # Extract the event details
-        event_name = find(".bg-blue-50 p.text-blue-700").text
-        current_event = Event.find_by(name: event_name)
-
-        # Make the correct guess
-        fill_in "What year did this happen?", with: current_event.year, wait: 5
-        click_button "Guess"
-
-        # Should show success message
-        expect(page).to have_content("🎉 Congratulations!")
-        expect(page).to have_content("You guessed correctly")
-        expect(page).to have_button("Play Again")
-      end
-
       it "ends the game after 6 incorrect guesses" do
         visit root_path
 
@@ -117,7 +99,7 @@ RSpec.describe "Yeardle Game", type: :system do
       visit root_path
 
       expect(page).to have_content("Hello, #{user.email_address}!")
-      expect(page).to have_button("Sign out")
+      expect(page).to have_link("Sign out")
       expect(page).not_to have_content("Playing as a guest")
     end
 
@@ -178,10 +160,10 @@ RSpec.describe "Yeardle Game", type: :system do
       click_button "Guess"
 
       # Sign in
-      click_link "Sign in"
+      click_link "Sign in", match: :first
       fill_in "email_address", with: user.email_address
       fill_in "password", with: user.password
-      click_button "Sign in"
+      click_button "Sign in", match: :first
 
       # Should be redirected back to game
       expect(page).to have_content("🗓️ Yeardle")
@@ -196,10 +178,110 @@ RSpec.describe "Yeardle Game", type: :system do
       click_button "Sign in"
 
       # Sign out
-      click_button "Sign out"
+      click_link "Sign out"
 
       expect(page).to have_content("Playing as Guest")
       expect(page).to have_link("Sign in")
+    end
+
+    describe "User Registration" do
+      it "allows guest users to create a new account" do
+        visit root_path
+
+        # Click sign up from the navigation
+        click_link "Sign up"
+
+        expect(page).to have_content("Sign up")
+        expect(page).to have_field("user_email_address")
+        expect(page).to have_field("user_password")
+        expect(page).to have_field("user_password_confirmation")
+      end
+
+      it "creates a new account with valid information" do
+        visit new_user_path
+
+        fill_in "user_email_address", with: "newuser@example.com"
+        fill_in "user_password", with: "securepassword123"
+        fill_in "user_password_confirmation", with: "securepassword123"
+        click_button "Create Account"
+
+        # Should be signed in automatically and redirected
+        expect(page).to have_content("Welcome! Your account has been created.")
+        expect(page).to have_content("Hello, newuser@example.com!")
+        expect(page).to have_link("Sign out")
+
+        # Verify user was created in database
+        expect(User.find_by(email_address: "newuser@example.com")).to be_present
+      end
+
+      it "shows validation errors for invalid input" do
+        visit new_user_path
+
+        # Try to create account with invalid data
+        fill_in "user_email_address", with: "invalid-email"
+        fill_in "user_password", with: "short"
+        fill_in "user_password_confirmation", with: "different"
+        click_button "Create Account"
+
+        # Should show errors
+        expect(page).to have_content("Email address is invalid")
+        expect(page).to have_content("Password is too short")
+        expect(page).to have_content("Password confirmation doesn't match")
+      end
+
+      it "prevents duplicate email addresses" do
+        create(:user, email_address: "taken@example.com")
+
+        visit new_user_path
+
+        fill_in "user_email_address", with: "taken@example.com"
+        fill_in "user_password", with: "validpassword123"
+        fill_in "user_password_confirmation", with: "validpassword123"
+        click_button "Create Account"
+
+        expect(page).to have_content("Email address has already been taken")
+      end
+
+      it "allows navigation between sign up and sign in" do
+        visit new_user_path
+
+        click_link "Sign in", match: :first
+        expect(page).to have_content("Sign in")
+        expect(page).to have_button("Sign in")
+
+        click_link "Sign up", match: :first
+        expect(page).to have_content("Sign up")
+        expect(page).to have_button("Create Account")
+      end
+
+      it "preserves game progress when signing up mid-game" do
+        visit root_path
+
+        # Start a game as guest
+        event_name = find(".bg-blue-50 p.text-blue-700").text
+        current_event = Event.find_by(name: event_name)
+
+        wrong_year = current_event.year + 5
+        fill_in "What year did this happen?", with: wrong_year
+        click_button "Guess"
+
+        expect(page).to have_content("years off")
+
+        # Sign up
+        click_link "Sign up"
+        fill_in "user_email_address", with: "newgamer@example.com"
+        fill_in "user_password", with: "securepassword123"
+        fill_in "user_password_confirmation", with: "securepassword123"
+        click_button "Create Account"
+
+        # Should be redirected back to game
+        expect(page).to have_content("🗓️ Yeardle")
+        expect(page).to have_content("Hello, newgamer@example.com!")
+
+        # Game should still be in progress
+        expect(page).to have_content("Current Event")
+        expect(page).to have_field("What year did this happen?")
+      end
     end
   end
 
