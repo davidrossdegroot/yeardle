@@ -84,7 +84,7 @@ RSpec.describe GamesController, type: :controller do
         end
 
         it "shows game over message" do
-          post :guess, params: { id: game.id, year: event.year + 10 }
+          post :guess, params: { id: game.id, year: event.year + 1 }
           expect(flash[:alert]).to include("Game over")
         end
       end

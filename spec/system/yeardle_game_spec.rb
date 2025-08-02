@@ -72,6 +72,24 @@ RSpec.describe "Yeardle Game", type: :system do
         expect(page).to have_content("The correct answer was")
         expect(page).to have_link("Play Again")
       end
+
+      it "wins the game when guessing correctly" do
+        visit root_path
+
+        # Extract the event details
+        event_name = find(".bg-blue-50 p.text-blue-700").text
+        current_event = Event.find_by(name: event_name)
+
+        # Make the correct guess
+        fill_in "What year did this happen?", with: current_event.year
+        click_button "Guess"
+
+        # Should show victory message
+        expect(page).to have_content("🎉 Congratulations!")
+        expect(page).to have_content("You guessed correctly")
+        expect(page).to have_link("Play Again")
+        expect(page).not_to have_field("What year did this happen?") # No input field since game is complete
+      end
     end
   end
 
@@ -182,6 +200,33 @@ RSpec.describe "Yeardle Game", type: :system do
       expect(page).to have_content("😔 Game Over")
       expect(page).to have_content("The correct answer was")
       expect(page).to have_link("Play Again")
+    end
+
+    it "wins the game when guessing correctly and saves to database" do
+      visit root_path
+
+      # Extract the event details
+      event_name = find(".bg-blue-50 p.text-blue-700").text
+      current_event = Event.find_by(name: event_name)
+
+      # Make the correct guess
+      fill_in "What year did this happen?", with: current_event.year
+      click_button "Guess"
+
+      # Should show victory message on the game results page
+      expect(page).to have_content("🎉 You Won!")
+      expect(page).to have_content("Completed in 1 guess!")
+      expect(page).to have_content("Game Results")
+      expect(page).to have_content("🎉 Correct!")
+      expect(page).to have_link("Play Again")
+
+      # Verify the game was saved to database as won
+      user.reload
+      completed_game = user.games.completed.first
+      expect(completed_game).to be_present
+      expect(completed_game.won?).to be true
+      expect(completed_game.guesses.count).to eq(1)
+      expect(completed_game.guesses.first.year).to eq(current_event.year)
     end
   end
 
