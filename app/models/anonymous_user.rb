@@ -47,15 +47,20 @@ class AnonymousUserGames
       return nil if game_data[:completed_at].present?
 
       # Reconstruct the game object
-      event = Event.find(game_data[:event_id])
-      AnonymousGame.new(
-        id: game_data[:id],
-        event: event,
-        guesses_data: game_data[:guesses] || [],
-        completed_at: game_data[:completed_at],
-        won: game_data[:won],
-        session_id: @session_id
-      )
+      begin
+        event = Event.find(game_data[:event_id])
+        AnonymousGame.new(
+          id: game_data[:id],
+          event: event,
+          guesses_data: game_data[:guesses] || [],
+          completed_at: game_data[:completed_at],
+          won: game_data[:won],
+          session_id: @session_id
+        )
+      rescue ActiveRecord::RecordNotFound
+        # If the event doesn't exist, return nil
+        nil
+      end
     else
       nil
     end

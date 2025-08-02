@@ -75,6 +75,9 @@ RSpec.describe AnonymousUserGames, type: :model do
     end
 
     it "returns nil when cached game is completed" do
+      # Create event explicitly before storing its ID
+      event = create(:event)
+
       completed_game_data = {
         id: "game123",
         event_id: event.id,
@@ -88,6 +91,9 @@ RSpec.describe AnonymousUserGames, type: :model do
     end
 
     it "returns AnonymousGame when incomplete game exists" do
+      # Create event explicitly before storing its ID
+      event = create(:event)
+
       game_data = {
         id: "game123",
         event_id: event.id,
@@ -106,14 +112,20 @@ RSpec.describe AnonymousUserGames, type: :model do
 
   describe "#create_new_game" do
     it "creates a new anonymous game" do
+      # Ensure there's an event available for random selection
+      create(:event)
+
       new_game = games.create_new_game
 
       expect(new_game).to be_an(AnonymousGame)
-      expect(new_game.event).to eq(event)
+      expect(new_game.event).to be_an(Event)
       expect(new_game.completed?).to be false
     end
 
     it "saves the game to cache" do
+      # Ensure there's an event available for random selection
+      create(:event)
+
       new_game = games.create_new_game
 
       cached_data = Rails.cache.read("anonymous_game_#{session_id}")
@@ -124,6 +136,9 @@ RSpec.describe AnonymousUserGames, type: :model do
 
   describe "#find" do
     it "returns current game when ID matches" do
+      # Create event explicitly before storing its ID
+      event = create(:event)
+
       game_data = {
         id: "game123",
         event_id: event.id,
