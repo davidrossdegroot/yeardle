@@ -1,24 +1,8 @@
-# README
+### Other Worldlee
+Idk some vibe coded BS.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+#### Steps to prod
+- create postgres database in firebase. Step 1) create project, Step 2) Upgrade to "blaze" plan, Step 3) find "realtime database"
+- create domain
+- point it to my hetzner server IP
+- add new docker 
