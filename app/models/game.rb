@@ -24,6 +24,6 @@ class Game < ApplicationRecord
 
   def self.create_new_game(user)
     event = Event.random_event
-    create!(user: user, event: event)
+    create!(user: user, event: event, won: false)
   end
 end

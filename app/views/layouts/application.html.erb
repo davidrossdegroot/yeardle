@@ -32,13 +32,13 @@
         <nav class="space-x-4">
           <% if authenticated? %>
             <span class="text-blue-100">Hello, <%= current_user.email_address %>!</span>
-            <%= link_to "Sign out", session_path, method: :delete, 
+            <%= link_to "Sign out", session_path, data: { "turbo-method": :delete }, 
                   class: "bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm" %>
           <% else %>
             <span class="text-blue-100 text-sm">Playing as Guest</span>
             <%= link_to "Sign in", new_session_path, 
                   class: "bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm" %>
-            <%= link_to "Sign up", new_session_path, 
+            <%= link_to "Sign up", new_user_path, 
                   class: "bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm" %>
           <% end %>
         </nav>

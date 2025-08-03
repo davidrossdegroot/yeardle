@@ -18,7 +18,7 @@ class Guess < ApplicationRecord
 
   def feedback
     return "🎉 Correct!" if correct?
-    
+
     years_off = difference
     if years_off <= 1
       "🔥 So close! #{years_off} year off"
